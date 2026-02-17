@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+    <title>Double Deck Chaos - Joker Edition</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --p1-color: #ef4444;
+            --p2-color: #22c55e;
+            --accent: #facc15;
+            --nightmare: #7c3aed;
+            --chaotic: #f59e0b;
+            --joker-color: #ec4899;
+        }
+
+        body { 
+            font-family: 'Verdana', sans-serif; 
+            background: var(--bg-dark); color: white; text-align: center; 
+            margin: 0; padding: 10px; min-height: 100vh;
+            touch-action: none; overflow: hidden;
+        }
+
+        /* --- AVISO DE TURNO (BANNER VISUAL) --- */
+        #aviso-estorvo {
+            position: fixed; top: 25%; left: 50%; transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.95); color: white; padding: 15px 30px;
+            border-radius: 12px; font-weight: bold; z-index: 4000; display: none;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7); border: 2px solid white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(-50%); }
+            20% { transform: translateX(-55%); }
+            60% { transform: translateX(-45%); }
+        }
+
+        @keyframes victory-float {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 8px var(--accent)); }
+            50% { transform: translate(-50%, -50%) scale(1.1); filter: drop-shadow(0 0 20px var(--accent)); }
+        }
+
+        .vitoria-banner { 
+            position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 2em; width: 90%; font-weight: bold; color: #fff;
+            text-shadow: 0 0 10px var(--accent), 0 0 20px var(--chaotic);
+            z-index: 5000; display: none; pointer-events: none;
+            animation: victory-float 1s infinite ease-in-out;
+            line-height: 1.2;
+        }
+
+        #btn-ajuda-fixo {
+            position: fixed; top: 15px; right: 15px; width: 35px; height: 35px;
+            background: rgba(255,255,255,0.1); border: 2px solid var(--accent);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: var(--accent); cursor: pointer; z-index: 2500;
+        }
+
+        #setup-menu, #pvp-submenu, #stats-screen, #help-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98); z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #pvp-submenu, #stats-screen, #help-screen { display: none; }
+
+        .btn-mode { padding: 12px 30px; margin: 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1em; width: 280px; transition: 0.2s; }
+        .btn-mode:active { transform: scale(0.95); }
+        .btn-normal { background: #334155; color: white; }
+        .btn-hard { background: #1e293b; color: #ef4444; border: 1px solid #ef4444; }
+        .btn-pvp { background: linear-gradient(90deg, var(--p1-color), var(--p2-color)); color: white; }
+        .btn-nightmare { background: var(--nightmare); color: white; border: 2px solid #a78bfa; }
+        .btn-chaotic { background: var(--chaotic); color: white; border: 2px solid white; animation: pulse 1.5s infinite; }
+        .btn-stats { background: transparent; color: var(--accent); border: 1px solid var(--accent); margin-top: 20px; }
+        
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+
+        .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 10px auto; max-width: 500px; }
+        .card { aspect-ratio: 2/3; position: relative; transform-style: preserve-3d; transition: transform 0.5s; cursor: pointer; }
+        .card.revealed { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+        
+        .card-front { background: white; color: #0f172a; transform: rotateY(180deg); font-weight: bold; font-size: 1.4em; flex-direction: column; }
+        .card-front .icon-large { font-size: 1.3em; transform: scale(1.2); margin-top: 2px; }
+        
+        .card-back { background: #1e293b; border: 1px solid #475569; font-weight: bold; color: rgba(255,255,255,0.1); font-size: 1.1em; }
+        
+        .deck-p1 .card-back { border: 2px solid var(--p1-color); color: var(--p1-color); }
+        .deck-p2 .card-back { border: 2px solid var(--p2-color); color: var(--p2-color); }
+        .card-estorvo { background: #ff7675 !important; color: white !important; }
+
+        .pile-container { display: flex; gap: 20px; justify-content: center; margin-bottom: 5px; }
+        .pile { width: 75px; height: 100px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.3s; }
+        
+        #draw-pile { background: linear-gradient(145deg, #334155, #0f172a); border: 2px solid #475569; box-shadow: 0 4px 0 #1e293b, 0 6px 0 #0f172a; }
+        #discard-pile { background: rgba(15, 23, 42, 0.4); border: 2px dashed #475569; }
+
+        #hand-popup { position: fixed; top: 15px; left: 15px; width: 70px; height: 100px; border-radius: 8px; border: 3px solid var(--accent); z-index: 1500; display: none; background: white; cursor: grab; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .record-item { background: rgba(255,255,255,0.05); padding: 10px; border-left: 4px solid var(--accent); display: flex; justify-content: space-between; width: 300px; font-size: 0.85em; margin: 5px; border-radius: 4px; }
+    </style>
+</head>
+<body onload="loadHallOfFame()">
+
+    <div id="aviso-estorvo">ESTORVO! TURNO ENCERRADO ☠️</div>
+    <div id="btn-ajuda-fixo" onclick="toggleHelp(true)">?</div>
+    <div id="vitoria-msg" class="vitoria-banner">VITÓRIA!</div>
+
+    <div id="setup-menu">
+        <h1 style="color: var(--accent); letter-spacing: 2px; font-size: 1.5em; margin-bottom: 5px;">DOUBLE DECK CHAOS</h1>
+        <p style="color: white; font-size: 0.8em; margin-bottom: 25px; opacity: 0.8; font-style: italic;">Criado por Marcos Elias Antunes</p>
+        <button class="btn-mode btn-normal" onclick="startGame('normal')">SOLO: NORMAL</button>
+        <button class="btn-mode btn-hard" onclick="startGame('dificil')">SOLO: DIFÍCIL</button>
+        <button class="btn-mode btn-nightmare" onclick="startGame('pesadelo')">💀 MODO PESADELO</button>
+        <button class="btn-mode btn-pvp" onclick="showPvPSubmenu()">⚔️ PVP LOCAL ⚔️</button>
+        <button class="btn-mode btn-stats" onclick="toggleStats(true)">🏆 HALL DA FAMA</button>
+    </div>
+
+    <div id="help-screen">
+        <h2 style="color: var(--accent);">COMO JOGAR</h2>
+        <div style="width:85%; max-width:400px; text-align:left; font-size:0.9em;">
+            <p><strong>Objetivo:</strong> Revelar os 10 espaços do seu tabuleiro.</p>
+            <p><b>⚜️ Coringa (J):</b> Substitui qualquer número.</p>
+            <p><b>🤡 Joker:</b> Sabota o rival desvirando uma carta dele.</p>
+            <p><b>☠️ Estorvo (Q/K):</b> Vermelhas. Passam o turno na hora!</p>
+        </div>
+        <button class="btn-mode btn-normal" onclick="toggleHelp(false)">ENTENDI!</button>
+    </div>
+
+    <div id="pvp-submenu">
+        <h2 style="color: white; margin-bottom: 20px;">MODO PVP</h2>
+        <button class="btn-mode btn-normal" onclick="startGame('pvp')">PVP: NORMAL</button>
+        <button class="btn-mode btn-chaotic" onclick="startGame('caotico')">PVP: CAÓTICO 🤡</button>
+        <button class="btn-mode btn-normal" style="background: #475569;" onclick="hidePvPSubmenu()">VOLTAR</button>
+    </div>
+
+    <div id="stats-screen">
+        <h2 style="color: var(--accent);">HALL DA FAMA</h2>
+        <div id="stats-content"></div>
+        <button class="btn-mode btn-normal" onclick="toggleStats(false)">VOLTAR</button>
+    </div>
+
+    <div class="war-bar-container" style="width: 90%; max-width: 500px; height: 12px; background: #334155; margin: 10px auto; border-radius: 10px; display: flex; overflow: hidden; border: 1px solid #475569;">
+        <div id="p1-progress" style="width: 0%; background: var(--p1-color); transition: 0.5s;"></div>
+        <div id="p2-progress" style="width: 0%; background: var(--p2-color); transition: 0.5s;"></div>
+    </div>
+
+    <div id="main-controls" class="controls" style="margin: 10px auto; padding: 15px; background: rgba(30, 41, 59, 0.9); border-radius: 15px; max-width: 440px; border: 4px solid #334155;">
+        <div id="status-nome" style="font-weight: bold; margin-bottom: 12px; font-size: 0.9em;">AGUARDANDO...</div>
+        <div class="pile-container">
+            <div id="draw-pile" class="pile" onclick="drawCard()">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 2.2em;">⚔️</span>
+                    <small id="deck-count" style="font-size: 10px; color: var(--accent); font-weight: bold;">0</small>
+                </div>
+            </div>
+            <div id="discard-pile" class="pile" onclick="handleDiscard()">
+                <div id="discard-content" style="display: flex; flex-direction: column; align-items: center; font-weight: bold; font-size: 1.2em;"></div>
+                <small style="position: absolute; bottom: 3px; font-size: 8px; color: #64748b; font-weight: bold;">LIXO</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="hand-popup" onmousedown="startDragging(event)" ontouchstart="startDragging(event)">
+        <div id="popup-inner" style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color:black; font-weight:bold; pointer-events: none; transform: scale(1.2);"></div>
+    </div>
+
+    <div id="p1-label" style="color: var(--p1-color); font-size: 9px; font-weight: bold; margin-top: 10px;">JOGADOR 1</div>
+    <div id="p1-board" class="board deck-p1"></div>
+
+    <div id="p2-label" style="color: var(--p2-color); font-size: 9px; font-weight: bold; margin-top: 15px;">JOGADOR 2 / CPU</div>
+    <div id="p2-board" class="board deck-p2"></div>
+
+    <script>
+        let deck = [], discardStack = [], p1Board = [], p2Board = [], currentCard = null;
+        let gameMode = 'normal', turn = 1, hallOfFame = [], bloqueioClick = false;
+
+        function getSym(v) {
+            const icons = {
+                1: '🗡️', 2: '🛡️', 3: '⚔️', 4: '🏹', 5: '⛏️',
+                6: '🪚', 7: '🔪', 8: '🪠', 9: '🌂', 10: '🥊',
+                'J': '⚜️', 'Q': '☠️', 'K': '☠️', 'JOKER': '🤡'
+            };
+            return icons[v] || '❓';
+        }
+
+        let isDragging = false, offset = { x: 0, y: 0 };
+        const popup = document.getElementById('hand-popup');
+        function startDragging(e) {
+            isDragging = true;
+            const cX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const cY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            offset.x = cX - popup.offsetLeft; offset.y = cY - popup.offsetTop;
+            document.addEventListener(e.type === 'touchstart' ? 'touchmove' : 'mousemove', drag);
+            document.addEventListener(e.type === 'touchstart' ? 'touchend' : 'mouseup', stop);
+        }
+        function drag(e) {
+            if (!isDragging) return;
+            const cX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const cY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            popup.style.left = (cX - offset.x) + 'px'; popup.style.top = (cY - offset.y) + 'px';
+            popup.style.right = 'auto'; popup.style.bottom = 'auto';
+        }
+        function stop() { isDragging = false; }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function tocarSom(tipo) {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const t = audioCtx.currentTime;
+            if (tipo === 'comprar') { osc.frequency.setValueAtTime(300, t); gain.gain.setValueAtTime(0.1, t); osc.start(t); osc.stop(t+0.1); }
+            else if (tipo === 'encaixar') { osc.frequency.setValueAtTime(700, t); gain.gain.setValueAtTime(0.1, t); osc.start(t); osc.stop(t+0.1); }
+            else if (tipo === 'joker') { osc.frequency.setValueAtTime(150, t); gain.gain.setValueAtTime(0.2, t); osc.start(t); osc.stop(t+0.2); }
+            else if (tipo === 'vitoria') { 
+                [523, 659, 783].forEach((f, i) => {
+                    const o = audioCtx.createOscillator(); o.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(f, t + i*0.1); o.start(t + i*0.1); o.stop(t + i*0.1 + 0.3);
+                });
+            } else { osc.frequency.setValueAtTime(150, t); gain.gain.setValueAtTime(0.05, t); osc.start(t); osc.stop(t+0.1); }
+        }
+
+        function toggleHelp(s) { document.getElementById('help-screen').style.display = s ? 'flex' : 'none'; }
+        function showPvPSubmenu() { document.getElementById('pvp-submenu').style.display = 'flex'; }
+        function hidePvPSubmenu() { document.getElementById('pvp-submenu').style.display = 'none'; }
+        
+        function toggleStats(s) {
+            if(s) {
+                document.getElementById('stats-content').innerHTML = 
+                    `<p style="color: #64748b; font-size: 0.75em; margin-bottom: 12px; font-weight: bold;">JOGO ORIGINAL POR: MARCOS ELIAS ANTUNES</p>` +
+                    (hallOfFame.length > 0 ? 
+                    hallOfFame.map(r => `<div class="record-item"><b>${r.nome}</b> <span>${r.modo}</span></div>`).join('') :
+                    "<p>Nenhum recorde ainda!</p>");
+                document.getElementById('stats-screen').style.display = 'flex';
+            } else document.getElementById('stats-screen').style.display = 'none';
+        }
+        
+        function loadHallOfFame() { const s = localStorage.getItem('DDC_HallOfFame'); if(s) hallOfFame = JSON.parse(s); }
+
+        function startGame(m) { audioCtx.resume(); gameMode = m; document.getElementById('setup-menu').style.display='none'; document.getElementById('pvp-submenu').style.display='none'; initGame(); }
+
+        function initGame() {
+            deck = []; 
+            if(gameMode === 'pesadelo' || gameMode === 'caotico') {
+                for(let v=1; v<=10; v++) { for(let j=0; j<8; j++) deck.push({ val: v, symbol: getSym(v), isCoringa: false, isEstorvo: false, isJoker: false }); }
+                for(let j=0; j<3; j++) { deck.push({ val: 'J', symbol: getSym('J'), isCoringa: true, isEstorvo: false, isJoker: false }); }
+                for(let i=0; i<18; i++) { 
+                    deck.push({ val: 'Q', symbol: getSym('Q'), isCoringa: false, isEstorvo: true, isJoker: false }); 
+                    deck.push({ val: 'K', symbol: getSym('K'), isCoringa: false, isEstorvo: true, isJoker: false }); 
+                }
+                for(let i=0; i<8; i++) deck.push({ val: 'JOKER', symbol: getSym('JOKER'), isCoringa: false, isEstorvo: false, isJoker: true });
+            } else {
+                let base = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J'];
+                if(gameMode === 'dificil') base.push('Q', 'K');
+                for (let b = 0; b < 2; b++) base.forEach(v => { for(let j=0; j<4; j++) deck.push({ val: v, symbol: getSym(v), isCoringa: v==='J', isEstorvo: (v==='Q'||v==='K'), isJoker: false }); });
+            }
+            deck.sort(() => Math.random() - 0.5);
+            p1Board = []; p2Board = [];
+            for (let i = 0; i < 10; i++) { p1Board.push({ data: deck.pop(), revealed: false }); p2Board.push({ data: deck.pop(), revealed: false }); }
+            discardStack = [deck.pop()]; 
+            turn = 1; currentCard = null;
+            updateUI();
+        }
+
+        function updateUI() {
+            renderBoard('p1-board', p1Board, 1); renderBoard('p2-board', p2Board, 2);
+            const ctrl = document.getElementById('main-controls');
+            ctrl.className = turn === 1 ? "controls turno-p1" : "controls turno-p2";
+            document.getElementById('status-nome').innerText = turn === 1 ? "VEZ DO JOGADOR 1" : (gameMode.includes('pvp')?"VEZ DO JOGADOR 2":"VEZ DA CPU");
+            const top = discardStack[discardStack.length - 1]; 
+            const dc = document.getElementById('discard-content');
+            if(top) {
+                dc.innerHTML = `<span>${top.val}</span><span class="icon-large">${top.symbol}</span>`;
+                document.getElementById('discard-pile').style.background = top.isEstorvo ? "#ff7675" : "white";
+                dc.style.color = top.isEstorvo ? "white" : "black";
+            } else {
+                dc.innerHTML = ""; document.getElementById('discard-pile').style.background = "rgba(15, 23, 42, 0.4)";
+            }
+            document.getElementById('deck-count').innerText = deck.length;
+            if(currentCard) {
+                popup.style.display = 'block';
+                popup.style.background = currentCard.isEstorvo ? "#ff7675" : (currentCard.isJoker ? "var(--joker-color)" : "white");
+                document.getElementById('popup-inner').style.color = (currentCard.isEstorvo || currentCard.isJoker) ? "white" : "black";
+                document.getElementById('popup-inner').innerHTML = `<div>${currentCard.val}</div><div class="icon-large">${currentCard.symbol}</div>`;
+            } else popup.style.display = 'none';
+            document.getElementById('p1-progress').style.width = (p1Board.filter(c=>c.revealed).length * 10) + "%";
+            document.getElementById('p2-progress').style.width = (p2Board.filter(c=>c.revealed).length * 10) + "%";
+        }
+
+        function renderBoard(id, board, pNum) {
+            const el = document.getElementById(id); el.innerHTML = '';
+            board.forEach((item, i) => {
+                const card = document.createElement('div'); card.className = `card ${item.revealed ? 'revealed' : ''}`;
+                card.innerHTML = `<div class="card-face card-back">${i+1}</div><div class="card-face card-front ${item.data.isEstorvo?'card-estorvo':''}"><div>${item.data.val}</div><div class="icon-large">${item.data.symbol}</div></div>`;
+                card.onclick = () => { if(!bloqueioClick) play(pNum, i); }; el.appendChild(card);
+            });
+        }
+
+        function drawCard() { if(bloqueioClick || currentCard || (turn === 2 && !gameMode.includes('pvp') && gameMode !== 'caotico')) return; currentCard = deck.pop(); tocarSom('comprar'); updateUI(); }
+        
+        function handleDiscard() {
+            if(bloqueioClick || (turn === 2 && !gameMode.includes('pvp') && gameMode !== 'caotico')) return;
+            if(currentCard) { if(!currentCard.isJoker) discardStack.push(currentCard); currentCard = null; endTurn(); } 
+            else if(discardStack.length > 0) { currentCard = discardStack.pop(); tocarSom('comprar'); updateUI(); }
+        }
+
+        function play(pNum, idx) {
+            if(!currentCard) return;
+            if(currentCard.isJoker) {
+                if(pNum !== turn) { 
+                    const tb = pNum === 1 ? p1Board : p2Board;
+                    if(tb[idx].revealed) { tb[idx].revealed = false; tocarSom('joker'); currentCard = null; endTurn(); }
+                } return;
+            }
+            if(turn !== pNum || currentCard.isEstorvo) return;
+            const b = pNum === 1 ? p1Board : p2Board;
+            if(currentCard.isCoringa || parseInt(currentCard.val) === (idx + 1)) {
+                tocarSom('encaixar'); 
+                let temp = b[idx].data; b[idx].data = currentCard; b[idx].revealed = true; currentCard = temp;
+                
+                if(currentCard && currentCard.isEstorvo) {
+                    bloqueioClick = true;
+                    document.getElementById('aviso-estorvo').style.display = 'block';
+                    updateUI();
+                    setTimeout(() => {
+                        discardStack.push(currentCard);
+                        currentCard = null;
+                        document.getElementById('aviso-estorvo').style.display = 'none';
+                        bloqueioClick = false;
+                        endTurn();
+                    }, 1200);
+                } else if(!currentCard || currentCard.isJoker) {
+                    if(currentCard && currentCard.isJoker) currentCard = null;
+                    updateUI(); if(checkWin()) return;
+                    endTurn();
+                } else {
+                    updateUI(); if(checkWin()) return;
+                }
+            }
+        }
+
+        function endTurn() { 
+            if(gameMode.includes('pvp') || gameMode === 'caotico') { turn = turn === 1 ? 2 : 1; updateUI(); } 
+            else { turn = 2; updateUI(); setTimeout(cpuBrain, 800); } 
+        }
+
+        function cpuBrain() {
+            if (checkWin()) return;
+            const top = discardStack[discardStack.length - 1];
+            if(top && !top.isEstorvo) {
+                let targetIdx = parseInt(top.val) - 1;
+                let canUse = top.isCoringa || (!p2Board[targetIdx].revealed);
+                if(canUse) currentCard = discardStack.pop();
+                else if(deck.length > 0) currentCard = deck.pop();
+            } else if(deck.length > 0) currentCard = deck.pop();
+            tocarSom('comprar'); updateUI(); setTimeout(cpuMoveLogic, 1000);
+        }
+
+        function cpuMoveLogic() {
+            if(!currentCard) { turn = 1; updateUI(); return; }
+            if(currentCard.isEstorvo) { discardStack.push(currentCard); currentCard = null; turn = 1; updateUI(); return; }
+            if(currentCard.isJoker) { 
+                let t = p1Board.findIndex(c => c.revealed);
+                if(t !== -1) { p1Board[t].revealed = false; tocarSom('joker'); }
+                currentCard = null; updateUI(); setTimeout(() => { turn = 1; updateUI(); }, 600); return;
+            }
+            let target = currentCard.isCoringa ? p2Board.findIndex(c => !c.revealed) : parseInt(currentCard.val) - 1;
+            if(target >= 0 && target < 10 && !p2Board[target].revealed) {
+                tocarSom('encaixar'); let temp = p2Board[target].data; p2Board[target].data = currentCard; p2Board[target].revealed = true; currentCard = temp;
+                updateUI(); if(checkWin()) return;
+                if(currentCard && !currentCard.isEstorvo && !currentCard.isJoker) setTimeout(cpuMoveLogic, 1000);
+                else { if(currentCard) discardStack.push(currentCard); currentCard = null; turn = 1; updateUI(); }
+                return;
+            }
+            if(currentCard) discardStack.push(currentCard);
+            currentCard = null; turn = 1; updateUI();
+        }
+
+        function checkWin() {
+            const p1Won = p1Board.every(c => c.revealed);
+            const p2Won = p2Board.every(c => c.revealed);
+            if(p1Won || p2Won) {
+                const winnerText = p1Won ? "JOGADOR 1" : (gameMode.includes('pvp') ? "JOGADOR 2" : "CPU");
+                const banner = document.getElementById('vitoria-msg');
+                banner.innerText = winnerText + " VENCEU!";
+                banner.style.display = 'block';
+                tocarSom('vitoria');
+                setTimeout(() => {
+                    let nomeVencedor = prompt(winnerText + " Venceu! Digite seu nome:", "Guerreiro");
+                    if(nomeVencedor) {
+                        hallOfFame.unshift({ nome: nomeVencedor.substring(0, 15), modo: gameMode.toUpperCase(), data: new Date().toLocaleDateString() });
+                        localStorage.setItem('DDC_HallOfFame', JSON.stringify(hallOfFame.slice(0, 10)));
+                    }
+                    location.reload();
+                }, 1000);
+                return true;
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>
