@@ -1,21 +1,23 @@
-# 🃏 Olá! Eu sou o criador do Double Deck Chaos 🎴
-<img width="1024" height="1024" alt="1000010479" src="https://github.com/user-attachments/assets/f3c0c472-8909-4e3e-a8bd-1cf73d628200" />
+# 🃏 Double Deck Chaos - Definitive Edition
+<img width="1024" height="1024" alt="1000011971" src="https://github.com/user-attachments/assets/3a5bea88-6a6d-4782-889a-bdc5f0906f2e" />
 
-Bem-vindo ao meu perfil!eu me chamo Marcos Elias Antunes Atualmente estou desenvolvendo o **Double Deck Chaos**, um jogo de cartas frenético baseado em **um jogo, da minha infância**.#   
-🎮 Projeto em Destaque: Double Deck Chaos
+Um jogo de cartas estratégico e caótico desenvolvido em HTML5, CSS3 e JavaScript. Teste sua sorte e sua capacidade de gerenciamento de recursos contra uma CPU inteligente ou contra um amigo!
 
-O **Double Deck Chaos** não é um jogo de cartas comum. Ele foi projetado para quem gosta de velocidade e estratégia imprevisível.
+## 🚀 Novidades da Versão Definitiva
+- **Sistema de Troca de Wilds (Swap):** Agora você pode substituir um Wild já posicionado no tabuleiro por uma carta numérica correspondente, recuperando o Wild para sua mão!
+- **Modo Pesadelo & Caótico:** Dificuldade balanceada com o limite estratégico de apenas **3 cartas Wild** por baralho.
+- **CPU Aprimorada:** A inteligência artificial agora utiliza lógica de substituição de cartas para tentar vencer você.
+- **Hall da Fama:** Registre suas vitórias mais épicas localmente.
 
-### ⚡ O que há de novo?
-* **Sistema de Deck Duplo:** Utilizamos 2 baralhos de 88 cartas, totalizando **176 cartas** em jogo!
-* **Embaralhamento de Elite:** Desenvolvi uma lógica de distribuição inicial aprimorada para garantir que cada rodada comece com o máximo de dinamismo.
-* **Visual Único:** Cartas personalizadas com ícones que fogem do tradicional:
-    * 🪚 **Serrote** | ⛏️ **Picareta** | 🔪 **Faca**
-    * 🌂 **Guarda-chuva** | 🪠 **Desentupidor**
+## 🎮 Como Jogar
+1. O objetivo é revelar todas as cartas do seu tabuleiro antes do oponente.
+2. Use os **Wilds** para preencher qualquer posição, mas use-os com sabedoria!
+3. Cuidado com os **Estorvos** e aproveite os **Jokers** para ganhar turnos extras.
 
----
-
-## 🛠️ Tecnologias & Habilidades
+## 🛠️ Tecnologias
+- **Frontend:** HTML5, CSS3 (Animações @keyframes)
+- **Lógica:** JavaScript Vanilla
+- **Hospedagem:** GitHub Pages
 * **Lógica de Jogo:** Algoritmos de embaralhamento e distribuição.
 * **Desenvolvimento:** Focado em tornar a experiência do usuário mais fluida e rápida.
 * **Localização:** Orgulhosamente desenvolvido em **Dois Vizinhos - PR**.
