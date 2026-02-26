@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chaos Monte Mania</title>
+    <style>
+        body { 
+            background-color: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            margin: 0; overflow: hidden; height: 100vh; touch-action: manipulation;
+        }
+
+        #menu-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 5000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #menu-screen h1 { color: #00ffcc; font-size: 2.5rem; text-shadow: 0 0 15px #00ffcc; margin-bottom: 40px; }
+        .menu-btn {
+            width: 250px; padding: 20px; margin: 10px;
+            background: transparent; border: 2px solid #00ffcc; color: #00ffcc;
+            font-size: 1.2rem; font-weight: bold; border-radius: 50px;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .menu-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
+
+        #status-log { 
+            background: rgba(0, 255, 204, 0.1); border: 2px solid #00ffcc; 
+            padding: 12px; border-radius: 25px; margin: 10px; 
+            font-weight: bold; color: #00ffcc; text-align: center; width: 85%; font-size: 0.9rem;
+            min-height: 24px; z-index: 100; transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+        }
+
+        #audio-controls { display: flex; justify-content: center; width: 100%; margin-top: 10px; margin-bottom: 5px; z-index: 2000; }
+        
+        .audio-btn {
+            background: rgba(0, 0, 0, 0.8); border: 2px solid #00ffcc;
+            color: #00ffcc; padding: 10px 30px; border-radius: 30px;
+            cursor: pointer; font-weight: bold; font-size: 1rem;
+            transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            text-transform: uppercase;
+        }
+        .audio-btn.off { border-color: #ff4d4d; color: #ff4d4d; box-shadow: 0 0 15px rgba(255, 77, 77, 0.3); }
+
+        #hand-preview {
+            position: fixed; top: 15px; left: 15px;
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(0, 0, 0, 0.9); border: 3px solid #00ffcc;
+            padding: 10px; border-radius: 12px; visibility: hidden; z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+        }
+
+        #board { position: relative; width: 100vw; height: 45vh; display: flex; justify-content: center; align-items: center; }
+        
+        #central-pile {
+            width: 280px; height: 280px; 
+            border: 2px dashed #00ffcc; border-radius: 50%;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+            background: rgba(0, 255, 204, 0.05); z-index: 10; cursor: pointer;
+            padding: 20px; box-sizing: border-box; overflow: visible;
+        }
+
+        .deck-card {
+            position: absolute; width: 40px; height: 55px;
+            background-color: #b30000; 
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 1px, transparent 1px), 
+                              linear-gradient(45deg, transparent 48%, #800000 48%, #800000 52%, transparent 52%);
+            background-size: 8px 8px;
+            border: 2px solid #fff; border-radius: 5px; z-index: 5;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+        }
+
+        .card-visual, .flying-card {
+            width: 55px; height: 80px; 
+            background: #fff; 
+            border-radius: 6px; position: relative;
+            display: flex; justify-content: center; align-items: center;
+            border: 1px solid #999; margin: 3px;
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        .card-img { width: 100%; height: 100%; object-fit: contain; }
+        .flying-card { position: fixed; z-index: 5000; pointer-events: none; transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .action-highlight { border: 3px solid #ffff00 !important; box-shadow: 0 0 30px #ffff00 !important; transform: scale(1.05); }
+
+        #players-area { display: flex; justify-content: space-around; width: 100%; position: absolute; bottom: 20px; }
+        .monte-container { text-align: center; width: 45%; }
+        .monte { width: 95px; height: 135px; border: 2px solid #666; background: #1a1a1a; margin: 8px auto; border-radius: 12px; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: inset 0 0 15px #000; }
+        .count-tag { font-size: 0.9rem; font-weight: bold; color: #aaa; text-transform: uppercase; }
+
+        #robbery-overlay, #end-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 6000; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+
+        #end-screen h2 { font-size: 3.5rem; text-shadow: 0 0 25px currentColor; }
+        .btn-restart { padding: 15px 45px; font-size: 1.3rem; cursor: pointer; background: transparent; border: 2px solid #00ffcc; color: #00ffcc; border-radius: 40px; transition: 0.3s; margin-top: 20px; }
+        .btn-restart:hover { background: #00ffcc; color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="menu-screen">
+        <h1>CHAOS MONTE MANIA</h1>
+        <button class="menu-btn" onclick="startGame('solo')">Solo (vs PC)</button>
+        <button class="menu-btn" onclick="startGame('pvp')">PvP Local</button>
+    </div>
+
+    <audio id="bg-music" loop><source src="assets/musica_caos.mp3" type="audio/mpeg"></audio>
+
+    <div id="hand-preview">
+        <span id="hand-label" style="font-size: 0.7rem; font-weight: bold; margin-bottom: 5px;">AÇÃO:</span>
+        <div id="card-in-hand"></div>
+    </div>
+
+    <div id="status-log">Chaos Monte Mania: Selecione um modo!</div>
+
+    <div id="board">
+        <div id="central-pile" onclick="handleTargetClick('center')"></div>
+    </div>
+
+    <div id="audio-controls"><button id="audio-toggle" class="audio-btn off">ÁUDIO: OFF</button></div>
+
+    <div id="players-area">
+        <div class="monte-container" id="container-p1" onclick="handleTargetClick('p1')">
+            <span id="p1-label" style="color:#00ffcc; font-weight: bold;">VOCÊ</span>
+            <div id="p1-monte" class="monte"></div>
+            <div id="p1-count" class="count-tag">0 cartas</div>
+        </div>
+        <div class="monte-container" id="container-p2" onclick="handleTargetClick('p2')">
+            <span id="p2-label" style="color:#ff4d4d; font-weight: bold;">PC</span>
+            <div id="p2-monte" class="monte"></div>
+            <div id="p2-count" class="count-tag">0 cartas</div>
+        </div>
+    </div>
+
+    <div id="robbery-overlay">
+        <h2 id="robbery-title"></h2>
+        <p id="robbery-msg" style="font-size: 1.5rem; color: #fff;"></p>
+    </div>
+
+    <div id="end-screen">
+        <h2 id="end-title"></h2>
+        <div id="end-score" style="font-size: 1.8rem; margin: 25px;"></div>
+        <button class="btn-restart" onclick="location.reload()">Menu Principal</button>
+    </div>
+
+    <script>
+        let deck = [], discard = [], p1Monte = [], p2Monte = [], selectedCard = null, turn = 'p1', gameMode = 'solo';
+        let isMusicPlaying = false;
+        
+        const music = document.getElementById('bg-music');
+        const audioBtn = document.getElementById('audio-toggle');
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        audioBtn.addEventListener('click', toggleMusic);
+
+        function toggleMusic() {
+            if (!isMusicPlaying) {
+                music.play().then(() => {
+                    isMusicPlaying = true;
+                    audioBtn.innerText = "ÁUDIO: ON"; audioBtn.classList.remove('off');
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                }).catch(e => console.log("Erro de áudio:", e));
+            } else {
+                music.pause(); isMusicPlaying = false;
+                audioBtn.innerText = "ÁUDIO: OFF"; audioBtn.classList.add('off');
+            }
+        }
+
+        const cardImages = {
+            'A': 'one-chaos.png', '2': 'two-chaos.png', '3': 'tree-chaos.png', '4': 'for-chaos.png',
+            '5': 'five-chaos.png', '6': 'six-chaos.png', '7': 'seven-chaos.png', '8': 'eght-chaos.png',
+            '9': 'nine-chaos.png', '10': 'ten-chaos.png', 'J': 'J-chaos.png', 'Q': 'Q-chaos.png', 'K': 'K-chaos.png'
+        };
+
+        const msgYou = ["Ladrão que rouba ladrão! 🔥", "Obrigado por guardar pra mim! 😎", "Direto para o meu monte! 🚀"];
+        const msgPC = ["Isso agora é meu! 🤖", "Fui mais rápido que você! 💨", "Belo monte você tinha aí! 😈"];
+
+        function startGame(mode) {
+            gameMode = mode;
+            document.getElementById('menu-screen').style.display = 'none';
+            initGame();
+        }
+
+        function initGame() {
+            deck = []; discard = []; p1Monte = []; p2Monte = [];
+            const values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+            // 2 baralhos de 52 = 104 cartas
+            for(let b=0; b<2; b++) for(let i=0; i<4; i++) values.forEach(v => deck.push({val:v, used: false}));
+            
+            for(let i=deck.length-1; i>0; i--){
+                const j = Math.floor(Math.random()*(i+1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            renderCircle();
+            updateUI();
+            updateLogStyle('p1');
+        }
+
+        function renderCircle() {
+            const board = document.getElementById('board');
+            const radius = 180;
+            const centerX = window.innerWidth / 2;
+            const centerY = (window.innerHeight * 0.45) / 2;
+            
+            deck.forEach((card, i) => {
+                const el = document.createElement('div');
+                el.className = 'deck-card';
+                el.id = `card-${i}`;
+                const angle = (i / deck.length) * 2 * Math.PI;
+                el.style.left = `${centerX + radius * Math.cos(angle) - 20}px`;
+                el.style.top = `${centerY + radius * Math.sin(angle) - 27}px`;
+                el.style.transform = `rotate(${angle + Math.PI/2}rad)`;
+                el.onclick = () => {
+                    if (!selectedCard && (turn === 'p1' || (gameMode === 'pvp' && turn === 'p2'))) {
+                        selectedCard = card; 
+                        card.used = true;
+                        el.style.opacity = "0";
+                        el.style.pointerEvents = "none";
+                        showHandPreview(card, turn === 'p1' ? "JOGADOR 1:" : "JOGADOR 2:");
+                        document.querySelectorAll('.monte, #central-pile').forEach(m => m.classList.add('action-highlight'));
+                    }
+                };
+                board.appendChild(el);
+            });
+        }
+
+        function handleTargetClick(target) {
+            if (!selectedCard) return;
+            const hPos = document.getElementById('hand-preview').getBoundingClientRect();
+            
+            if (turn === 'p1') {
+                if (target === 'p1') {
+                    const matches = discard.filter(c => c.val === selectedCard.val);
+                    if (matches.length > 0) {
+                        animate(selectedCard, hPos, 'p1-monte');
+                        matches.forEach((m, i) => setTimeout(() => animate(m, document.getElementById('central-pile').getBoundingClientRect(), 'p1-monte'), i*100));
+                        setTimeout(() => { p1Monte.push(...matches, selectedCard); discard = discard.filter(c => c.val !== selectedCard.val); finishMove(false); }, 850);
+                    } else if (p1Monte.length > 0 && p1Monte[p1Monte.length-1].val === selectedCard.val) {
+                        animate(selectedCard, hPos, 'p1-monte', () => { p1Monte.push(selectedCard); finishMove(false); });
+                    }
+                } else if (target === 'p2' && p2Monte.length > 0 && p2Monte[p2Monte.length-1].val === selectedCard.val) {
+                    showRobbery(false);
+                    animate(selectedCard, hPos, 'p1-monte', () => { p1Monte.push(...p2Monte, selectedCard); p2Monte = []; finishMove(false); });
+                } else if (target === 'center') {
+                    animate(selectedCard, hPos, 'central-pile', () => { discard.push(selectedCard); finishMove(true); });
+                }
+            } else if (turn === 'p2' && gameMode === 'pvp') {
+                if (target === 'p2') {
+                    const matches = discard.filter(c => c.val === selectedCard.val);
+                    if (matches.length > 0) {
+                        animate(selectedCard, hPos, 'p2-monte');
+                        matches.forEach((m, i) => setTimeout(() => animate(m, document.getElementById('central-pile').getBoundingClientRect(), 'p2-monte'), i*100));
+                        setTimeout(() => { p2Monte.push(...matches, selectedCard); discard = discard.filter(c => c.val !== selectedCard.val); finishMove(false); }, 850);
+                    } else if (p2Monte.length > 0 && p2Monte[p2Monte.length-1].val === selectedCard.val) {
+                        animate(selectedCard, hPos, 'p2-monte', () => { p2Monte.push(selectedCard); finishMove(false); });
+                    }
+                } else if (target === 'p1' && p1Monte.length > 0 && p1Monte[p1Monte.length-1].val === selectedCard.val) {
+                    showRobbery(true);
+                    animate(selectedCard, hPos, 'p2-monte', () => { p2Monte.push(...p1Monte, selectedCard); p1Monte = []; finishMove(false); });
+                } else if (target === 'center') {
+                    animate(selectedCard, hPos, 'central-pile', () => { discard.push(selectedCard); finishMove(true); });
+                }
+            }
+        }
+
+        function checkGameOver() {
+            // CORREÇÃO: Verifica se ainda existem cartas com opacidade maior que 0 no círculo
+            const cardsOnTable = Array.from(document.querySelectorAll('.deck-card')).filter(el => el.style.opacity !== "0");
+            
+            if (cardsOnTable.length === 0 && !selectedCard) {
+                setTimeout(() => {
+                    const s = document.getElementById('end-screen');
+                    s.style.display = 'flex';
+                    const win = p1Monte.length >= p2Monte.length;
+                    document.getElementById('end-title').innerText = gameMode === 'solo' ? (win ? "VITÓRIA!" : "DERROTA...") : (win ? "J1 VENCEU!" : "J2 VENCEU!");
+                    document.getElementById('end-title').style.color = win ? "#00ffcc" : "#ff4d4d";
+                    document.getElementById('end-score').innerText = `${gameMode==='solo'?'VOCÊ':'J1'}: ${p1Monte.length} | ${gameMode==='solo'?'PC':'J2'}: ${p2Monte.length}`;
+                }, 1000);
+            }
+        }
+
+        function finishMove(swapTurn) {
+            selectedCard = null; 
+            hideHandPreview();
+            updateUI();
+            checkGameOver();
+
+            if (swapTurn) {
+                turn = (turn === 'p1') ? 'p2' : 'p1';
+                updateLogStyle(turn);
+                const name = (turn === 'p1') ? (gameMode === 'pvp' ? "Jogador 1" : "Você") : (gameMode === 'pvp' ? "Jogador 2" : "PC");
+                document.getElementById('status-log').innerText = `Vez de: ${name}...`;
+                if (gameMode === 'solo' && turn === 'p2') setTimeout(pcMove, 1200);
+            } else {
+                updateLogStyle(turn);
+                document.getElementById('status-log').innerText = "Par encontrado! Jogue de novo.";
+            }
+        }
+
+        function updateUI() {
+            const cp = document.getElementById('central-pile'); cp.innerHTML = "";
+            discard.forEach(c => cp.innerHTML += createCardHTML(c));
+            document.getElementById('p1-monte').innerHTML = p1Monte.length > 0 ? createCardHTML(p1Monte[p1Monte.length-1], true) : "";
+            document.getElementById('p2-monte').innerHTML = p2Monte.length > 0 ? createCardHTML(p2Monte[p2Monte.length-1], true) : "";
+            document.getElementById('p1-count').innerText = `${p1Monte.length} cartas`;
+            document.getElementById('p2-count').innerText = `${p2Monte.length} cartas`;
+        }
+
+        // Funções auxiliares (mesma lógica anterior com pequenos ajustes de visual)
+        function createCardHTML(card, isLarge = false) {
+            const size = isLarge ? 'width:80px; height:120px;' : '';
+            const imgPath = `assets/${cardImages[card.val]}`;
+            return `<div class="card-visual" style="${size}"><img src="${imgPath}" class="card-img" alt="${card.val}"></div>`;
+        }
+        function updateLogStyle(player) {
+            const log = document.getElementById('status-log');
+            const color = (player === 'p1') ? "#00ffcc" : "#ff4d4d";
+            log.style.borderColor = color; log.style.color = color;
+            log.style.background = `rgba(${player === 'p1' ? '0,255,204' : '255,77,77'}, 0.1)`;
+        }
+        function showHandPreview(card, label) {
+            const p = document.getElementById('hand-preview');
+            const l = document.getElementById('hand-label');
+            l.innerText = label;
+            l.style.color = (turn === 'p1') ? "#00ffcc" : "#ff4d4d";
+            p.style.borderColor = l.style.color;
+            document.getElementById('card-in-hand').innerHTML = createCardHTML(card, true);
+            p.style.visibility = 'visible';
+        }
+        function hideHandPreview() {
+            document.getElementById('hand-preview').style.visibility = 'hidden';
+            document.querySelectorAll('.action-highlight').forEach(m => m.classList.remove('action-highlight'));
+        }
+        function animate(card, start, endId, cb) {
+            const f = document.createElement('div');
+            f.className = 'flying-card';
+            f.innerHTML = `<img src="assets/${cardImages[card.val]}" class="card-img">`;
+            f.style.left = start.left + 'px'; f.style.top = start.top + 'px';
+            document.body.appendChild(f);
+            const end = document.getElementById(endId).getBoundingClientRect();
+            setTimeout(() => {
+                f.style.left = (end.left + end.width/2 - 27) + 'px';
+                f.style.top = (end.top + end.height/2 - 40) + 'px';
+                f.style.transform = "rotate(360deg) scale(1.1)";
+            }, 50);
+            setTimeout(() => { f.remove(); if(cb) cb(); updateUI(); }, 800);
+        }
+        function showRobbery(isP2) {
+            const o = document.getElementById('robbery-overlay');
+            const t = document.getElementById('robbery-title');
+            t.innerText = isP2 ? "ROUBADO!" : "ROUBOU!";
+            t.style.color = isP2 ? "#ff4d4d" : "#00ffcc";
+            document.getElementById('robbery-msg').innerText = isP2 ? msgPC[Math.floor(Math.random()*msgPC.length)] : msgYou[Math.floor(Math.random()*msgYou.length)];
+            o.style.display = 'flex'; setTimeout(() => o.style.display = 'none', 1800);
+        }
+        function pcMove() {
+            if (turn !== 'p2' || gameMode !== 'solo') return;
+            const available = deck.map((c, i) => c.used ? -1 : i).filter(i => i !== -1);
+            if (available.length === 0) { checkGameOver(); return; }
+            const idx = available[Math.floor(Math.random() * available.length)];
+            const card = deck[idx]; card.used = true;
+            document.getElementById(`card-${idx}`).style.opacity = "0";
+            showHandPreview(card, "PC JOGANDO...");
+            setTimeout(() => {
+                const hPos = document.getElementById('hand-preview').getBoundingClientRect();
+                if (p1Monte.length > 0 && p1Monte[p1Monte.length-1].val === card.val) {
+                    showRobbery(true);
+                    animate(card, hPos, 'p2-monte', () => { p2Monte.push(...p1Monte, card); p1Monte = []; hideHandPreview(); updateUI(); setTimeout(pcMove, 1200); });
+                } else if (discard.some(c => c.val === card.val)) {
+                    const matches = discard.filter(c => c.val === card.val);
+                    animate(card, hPos, 'p2-monte', () => { p2Monte.push(...matches, card); discard = discard.filter(c => c.val !== card.val); hideHandPreview(); updateUI(); setTimeout(pcMove, 1200); });
+                } else if (p2Monte.length > 0 && p2Monte[p2Monte.length-1].val === card.val) {
+                    animate(card, hPos, 'p2-monte', () => { p2Monte.push(card); hideHandPreview(); updateUI(); setTimeout(pcMove, 1200); });
+                } else {
+                    animate(card, hPos, 'central-pile', () => { discard.push(card); turn = 'p1'; updateLogStyle('p1'); document.getElementById('status-log').innerText = "Sua vez!"; hideHandPreview(); updateUI(); checkGameOver(); });
+                }
+            }, 1200);
+        }
+    </script>
+</body>
+</html>

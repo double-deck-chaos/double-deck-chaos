@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chaos Runner: Joker's Revenge</title>
+    <style>
+        body { margin: 0; background: #020205; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        #game-container { position: relative; width: 95vw; max-width: 400px; height: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,1); }
+        
+        /* UI de Jogo */
+        #ui { position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-between; z-index: 10; pointer-events: none; box-sizing: border-box; padding: 0 10px; }
+        .stat-box { background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 12px; border: 2px solid #ff00ff; box-shadow: 0 0 15px rgba(255,0,255,0.4); }
+        #score { color: #00ffff; font-size: 30px; font-weight: bold; margin: 0; text-shadow: 0 0 10px #00ffff; }
+        #wildCount { color: #f1c40f; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px #f1c40f; }
+        
+        canvas { background: #050510; width: 100%; height: 100%; touch-action: none; display: block; }
+        
+        /* Personagem Palhaço (Tamanho 100% maior) */
+        #player-gif {
+            position: absolute;
+            width: 180px; height: 200px; 
+            pointer-events: none; z-index: 5;
+            transform: translate(-50%, -50%);
+            transition: left 0.15s ease-out;
+        }
+
+        #powerup-bar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 10px; border: 1px solid #ff0000; display: none; border-radius: 5px; overflow: hidden; z-index: 10; }
+        #powerup-fill { height: 100%; background: #ff0000; width: 100%; }
+
+        /* TELA DE GAME OVER PERSONALIZADA */
+        #game-over-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100; text-align: center; color: white;
+        }
+        #game-over-screen img { width: 220px; margin-bottom: 10px; filter: drop-shadow(0 0 15px #ff00ff); }
+        #game-over-screen h2 { color: #ff00ff; font-size: 26px; margin: 5px 0; text-shadow: 0 0 10px #ff00ff; }
+        .result-text { font-size: 20px; margin: 5px 0; }
+        #high-score { color: #f1c40f; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        #msg-incentivo { color: #00ffff; font-style: italic; font-size: 16px; margin: 10px 20px !important; line-height: 1.4; }
+        #btn-restart { margin-top: 15px; padding: 12px 25px; background: #f1c40f; border: none; border-radius: 50px; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4); }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="ui">
+            <div class="stat-box"><p id="score">0</p></div>
+            <div class="stat-box"><div id="wildCount">🃏 0</div></div>
+        </div>
+
+        <div id="powerup-bar"><div id="powerup-fill"></div></div>
+
+        <img id="player-gif" src="palhaçocorrendo.gif" alt="Palhaço">
+        
+        <div id="game-over-screen">
+            <img src="runn2.png" alt="Joker Revenge">
+            <h2>CHAOS RUNNER</h2>
+            <p style="color:#00ffff; font-weight: bold; margin-top:-10px;">JOKER'S REVENGE</p>
+            <p class="result-text" id="final-score">Monte: 0</p>
+            <p id="high-score">Recorde: 0</p>
+            <p id="msg-incentivo"></p>
+            <button id="btn-restart" onclick="resetGame()">DESAFIAR O CAOS</button>
+        </div>
+
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const wildElement = document.getElementById('wildCount');
+const pBar = document.getElementById('powerup-bar');
+const pFill = document.getElementById('powerup-fill');
+const playerGif = document.getElementById('player-gif');
+const gameOverScreen = document.getElementById('game-over-screen');
+const finalScoreText = document.getElementById('final-score');
+const highScoreText = document.getElementById('high-score');
+const msgIncentivoText = document.getElementById('msg-incentivo');
+
+let score, wilds, isGameOver, isInvincible, frameCount, gameSpeed, obstacles, animationId;
+let isGiant = false, giantTimer = 0, hasShield = false; 
+let touchStartX = 0, touchStartY = 0, swipeActive = true;
+
+const messages = [
+    "O Joker não aceita derrota! Tente de novo!",
+    "O caos é sua casa. Volte para a pista!",
+    "Eles acham que te pararam? Mostre o contrário!",
+    "Sua vingança está apenas começando...",
+    "Quase recorde! O Monte te espera!"
+];
+
+const lanes = [80, 200, 320];
+const player = { lane: 1, x: 200, y: 520, w: 180, h: 200, dy: 0, jumpForce: 16, gravity: 0.8, grounded: true, jumpY: 0 };
+
+function resetGame() {
+    if (animationId) cancelAnimationFrame(animationId);
+    score = 0; wilds = 0; isGameOver = false; isInvincible = false;
+    isGiant = false; giantTimer = 0; hasShield = false;
+    frameCount = 0; gameSpeed = 0.012; obstacles = [];
+    
+    scoreElement.innerText = "0";
+    wildElement.innerText = "🃏 0";
+    pBar.style.display = "none";
+    gameOverScreen.style.display = "none";
+    playerGif.style.display = "block";
+    playerGif.style.opacity = "1";
+    playerGif.style.transform = "translate(-50%, -50%) scale(1)";
+    
+    loop();
+}
+
+function spawn() {
+    const laneIdx = Math.floor(Math.random() * 3);
+    const rand = Math.random();
+    let type = 'danger';
+    let content = ['🚧', '🔥', '🧨', '💀', '👽', '🛸', '🦅', '⚡'][Math.floor(Math.random()*8)];
+
+    if (rand < 0.07) { type = 'wild'; content = '🃏'; } 
+    else if (rand < 0.12) { type = 'king'; content = 'K'; } 
+    else if (rand < 0.17) { type = 'queen'; content = 'Q'; }
+
+    obstacles.push({ lane: laneIdx, z: 0, content: content, type: type, passed: false });
+}
+
+function handleResurrection() {
+    if (wilds > 0) {
+        wilds--;
+        wildElement.innerText = `🃏 ${wilds}`;
+        isInvincible = true;
+        obstacles = []; 
+        setTimeout(() => { isInvincible = false; }, 2000);
+        return true;
+    }
+    return false;
+}
+
+function drawCard(x, y, size, label, color) {
+    const w = size * 0.7; const h = size;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.shadowBlur = 15; ctx.shadowColor = color;
+    ctx.fillStyle = "white";
+    ctx.beginPath(); ctx.roundRect(-w/2, -h/2, w, h, 5); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = (label === '🃏') ? "purple" : (label === 'K' ? "red" : "blue");
+    ctx.font = `bold ${size/2}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+}
+
+function drawNeonBuildings(zOffset) {
+    const colors = ['#ff00ff', '#00ffff', '#7000ff'];
+    for (let side = -1; side <= 1; side += 2) {
+        for (let i = 0; i < 5; i++) {
+            let z = ((i * 0.25 + zOffset) % 1.25);
+            if (z < 0) z += 1.25;
+            let x = 200 + (side * (150 + 400 * z));
+            let y = 220 + (380 * z);
+            let w = 40 + 200 * z; let h = 100 + 500 * z;
+            ctx.strokeStyle = colors[i % 3]; ctx.lineWidth = 2; ctx.globalAlpha = 1 - z;
+            ctx.strokeRect(side === -1 ? x - w : x, y - h, w, h);
+        }
+    }
+    ctx.globalAlpha = 1;
+}
+
+function update() {
+    if (isGameOver) return;
+    frameCount++;
+
+    player.x += (lanes[player.lane] - player.x) * 0.25; 
+
+    if (!player.grounded) {
+        player.dy += player.gravity; player.jumpY += player.dy;
+        if (player.jumpY > 0) { player.jumpY = 0; player.dy = 0; player.grounded = true; }
+    }
+
+    playerGif.style.left = player.x + "px";
+    playerGif.style.top = (player.y + player.jumpY) + "px";
+
+    if (frameCount % 45 === 0) spawn();
+
+    if (isGiant) {
+        giantTimer--;
+        pBar.style.display = "block";
+        pFill.style.width = (giantTimer / 360) * 100 + "%";
+        playerGif.style.transform = "translate(-50%, -50%) scale(1.5)";
+        if (giantTimer <= 0) { isGiant = false; pBar.style.display = "none"; playerGif.style.transform = "translate(-50%, -50%) scale(1)"; }
+    }
+
+    if (isInvincible) playerGif.style.opacity = (frameCount % 10 < 5) ? "0.3" : "0.8";
+    else playerGif.style.opacity = "1";
+
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obs = obstacles[i];
+        obs.z += gameSpeed + (score * 0.00007);
+
+        if (obs.z > 0.82 && obs.z < 0.98 && obs.lane === player.lane) {
+            if (obs.type === 'wild' && !obs.passed) {
+                wilds++; wildElement.innerText = `🃏 ${wilds}`; obstacles.splice(i, 1);
+            } else if (obs.type === 'king' && !obs.passed) {
+                isGiant = true; giantTimer = 360; obstacles.splice(i, 1);
+            } else if (obs.type === 'queen' && !obs.passed) {
+                hasShield = true; obstacles.splice(i, 1);
+            } else if (obs.type === 'danger' && !isInvincible) {
+                if (isGiant) { score += 2; scoreElement.innerText = score; obstacles.splice(i, 1); } 
+                else if (hasShield) { hasShield = false; isInvincible = true; setTimeout(() => isInvincible = false, 1000); obstacles.splice(i, 1); } 
+                else if (player.grounded) {
+                    if (!handleResurrection()) {
+                        isGameOver = true;
+                        triggerGameOver();
+                    }
+                }
+            }
+        }
+        if (obs.z > 1.1) {
+            if (!obs.passed) { score++; scoreElement.innerText = score; obs.passed = true; }
+            obstacles.splice(i, 1);
+        }
+    }
+}
+
+function triggerGameOver() {
+    playerGif.style.display = "none";
+    
+    // Lógica de Recorde (LocalStorage)
+    let savedRecord = localStorage.getItem('chaosRunnerRecord') || 0;
+    if (score > savedRecord) {
+        localStorage.setItem('chaosRunnerRecord', score);
+        savedRecord = score;
+    }
+    
+    finalScoreText.innerText = "Monte Atual: " + score;
+    highScoreText.innerText = "Maior Monte: " + savedRecord;
+    msgIncentivoText.innerText = messages[Math.floor(Math.random() * messages.length)];
+    gameOverScreen.style.display = "flex";
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawNeonBuildings(frameCount * 0.005);
+    
+    // Estrada
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+    for(let i=0; i<6; i++){
+        let z = ((i*0.2 + (frameCount*0.01)) % 1);
+        let y = 220 + (380 * z); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(400, y); ctx.stroke();
+    }
+    
+    ctx.strokeStyle = isInvincible ? '#f1c40f' : (isGiant ? '#ff0000' : '#ff00ff');
+    ctx.lineWidth = 3;
+    [0, 1, 2, 3].forEach(i => {
+        ctx.beginPath(); ctx.moveTo(160 + (i * 26.6), 220); ctx.lineTo(i * 133.3, 600); ctx.stroke();
+    });
+
+    obstacles.forEach(obs => {
+        const pX = 160 + (obs.lane * 40) + ( (obs.lane - 1) * 160 * obs.z );
+        const pY = 220 + (380 * obs.z);
+        const size = 15 + (90 * obs.z);
+        if (['wild', 'king', 'queen'].includes(obs.type)) {
+            let color = obs.type === 'king' ? "#ff0000" : (obs.type === 'queen' ? "#00ffff" : "#f1c40f");
+            drawCard(pX, pY, size, obs.content, color);
+        } else {
+            ctx.font = `bold ${size}px Arial`; ctx.textAlign = "center";
+            ctx.shadowBlur = 15 * obs.z; ctx.shadowColor = "cyan";
+            ctx.fillText(obs.content, pX, pY); ctx.shadowBlur = 0;
+        }
+    });
+
+    if (hasShield) {
+        ctx.save();
+        ctx.translate(player.x, player.y + player.jumpY);
+        ctx.beginPath(); ctx.arc(0, 0, 110, 0, Math.PI * 2);
+        ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 4; ctx.setLineDash([8, 8]);
+        ctx.lineDashOffset = -frameCount; ctx.stroke();
+        ctx.restore();
+    }
+}
+
+function loop() { 
+    update(); 
+    draw(); 
+    if (!isGameOver) animationId = requestAnimationFrame(loop); 
+}
+
+window.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; swipeActive = true; }, {passive: false});
+window.addEventListener('touchmove', e => {
+    if (!swipeActive || isGameOver) return;
+    const dx = e.touches[0].clientX - touchStartX;
+    const dy = e.touches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 35) {
+        if (dx > 0 && player.lane < 2) player.lane++;
+        else if (dx < 0 && player.lane > 0) player.lane--;
+        swipeActive = false;
+    } else if (dy < -45 && player.grounded) {
+        player.dy = -player.jumpForce; player.grounded = false; swipeActive = false;
+    }
+}, {passive: false});
+
+resetGame();
+</script>
+</body>
+</html>
