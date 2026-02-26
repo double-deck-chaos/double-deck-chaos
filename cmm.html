@@ -111,7 +111,7 @@
         <button class="menu-btn" onclick="startGame('pvp')">PvP Local</button>
     </div>
 
-    <audio id="bg-music" loop><source src="assets/musica_caos.mp3" type="audio/mpeg"></audio>
+    <audio id="bg-music" loop><source src="musica_caos.mp3" type="audio/mpeg"></audio>
 
     <div id="hand-preview">
         <span id="hand-label" style="font-size: 0.7rem; font-weight: bold; margin-bottom: 5px;">AÇÃO:</span>
@@ -191,7 +191,6 @@
         function initGame() {
             deck = []; discard = []; p1Monte = []; p2Monte = [];
             const values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-            // 2 baralhos de 52 = 104 cartas
             for(let b=0; b<2; b++) for(let i=0; i<4; i++) values.forEach(v => deck.push({val:v, used: false}));
             
             for(let i=deck.length-1; i>0; i--){
@@ -271,7 +270,6 @@
         }
 
         function checkGameOver() {
-            // CORREÇÃO: Verifica se ainda existem cartas com opacidade maior que 0 no círculo
             const cardsOnTable = Array.from(document.querySelectorAll('.deck-card')).filter(el => el.style.opacity !== "0");
             
             if (cardsOnTable.length === 0 && !selectedCard) {
@@ -313,10 +311,9 @@
             document.getElementById('p2-count').innerText = `${p2Monte.length} cartas`;
         }
 
-        // Funções auxiliares (mesma lógica anterior com pequenos ajustes de visual)
         function createCardHTML(card, isLarge = false) {
             const size = isLarge ? 'width:80px; height:120px;' : '';
-            const imgPath = `assets/${cardImages[card.val]}`;
+            const imgPath = `${cardImages[card.val]}`;
             return `<div class="card-visual" style="${size}"><img src="${imgPath}" class="card-img" alt="${card.val}"></div>`;
         }
         function updateLogStyle(player) {
@@ -341,7 +338,7 @@
         function animate(card, start, endId, cb) {
             const f = document.createElement('div');
             f.className = 'flying-card';
-            f.innerHTML = `<img src="assets/${cardImages[card.val]}" class="card-img">`;
+            f.innerHTML = `<img src="${cardImages[card.val]}" class="card-img">`;
             f.style.left = start.left + 'px'; f.style.top = start.top + 'px';
             document.body.appendChild(f);
             const end = document.getElementById(endId).getBoundingClientRect();
