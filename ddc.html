@@ -385,8 +385,7 @@
             const top = discardStack[discardStack.length - 1]; 
             const dc = document.getElementById('discard-content');
             if(top) {
-                dc.innerHTML = `<img src="assets/${cardImages[top.val]}" class="card-img">`;
-                document.getElementById('discard-pile').style.background = top.isEstorvo ? "#ff7675" : "white";
+                dc.innerHTML = `<img src="${cardImages[top.val]}" class="card-img">`;
             } else {
                 dc.innerHTML = ""; 
                 document.getElementById('discard-pile').style.background = "rgba(15, 23, 42, 0.4)";
@@ -404,7 +403,7 @@
                 }
                 popup.style.display = 'block';
                 popup.style.background = currentCard.isEstorvo ? "#ff7675" : (currentCard.isJoker ? "var(--joker-color)" : "white");
-                document.getElementById('popup-inner').innerHTML = `<img src="assets/${cardImages[currentCard.val]}" class="card-img">`;
+                document.getElementById('popup-inner').innerHTML = `<img src="${cardImages[currentCard.val]}" class="card-img">`;
             } else {
                 popup.style.display = 'none';
                 popup.style.left = ''; popup.style.top = '';
@@ -417,7 +416,7 @@
             const el = document.getElementById(id); el.innerHTML = '';
             board.forEach((item, i) => {
                 const card = document.createElement('div'); card.className = `card ${item.revealed ? 'revealed' : ''}`;
-                const cardImg = `assets/${cardImages[item.data.val]}`;
+                const cardImg = `${cardImages[item.data.val]}`;
                 card.innerHTML = `
                     <div class="card-face card-back">${i+1}</div>
                     <div class="card-face card-front ${item.data.isEstorvo?'card-estorvo':''}">
