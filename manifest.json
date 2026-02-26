@@ -1,0 +1,17 @@
+{
+  "name": "Double Deck Chaos",
+  "short_name": "DDC",
+  "description": "Wars Cards: Double Deck Chaos & Chaos Runner",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#050510",
+  "theme_color": "#050510",
+  "icons": [
+    {
+      "src": "wild-chaos.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
