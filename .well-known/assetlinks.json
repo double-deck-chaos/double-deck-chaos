@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.double_deck_chaos.twa",
+        "sha256_cert_fingerprints": ["FD:E3:E6:45:56:E7:9C:E6:CE:DC:AE:4C:A6:D4:D4:7E:3F:E4:E2:B6:E5:A2:38:E5:AF:E2:FF:C5:D9:BF:AA:99"]
+      }
+    }]
