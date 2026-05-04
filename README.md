@@ -15,7 +15,7 @@ Destaque: Sistema de dois baralhos (88 cartas) e o brutal Modo Pesadelo.
 Diferencial: Gerenciamento de cartas Wild para ressurreição estratégica.
 🏃 Chaos Runner: Joker's Revenge
 Um "Endless Runner" frenético onde o baralho dita o ritmo.
-Ação: Pule ou atropele obstáculos, pegue todas as cartas de baralho que ver, elas te daram uma grande vantagem!
+Ação: Pule ou atropele obstáculos. Pegue todas as cartas de baralho que ver; elas te darão uma grande vantagem!
 Desafio: Carregue o maior "monte" possível sem colidir.
 💰 Chaos Monte Mania
 A versão neon vibrante do clássico Rouba Monte.
@@ -30,7 +30,7 @@ Acesse o portal via GitHub Pages.
 No Index, escolha o seu desafio.
 Dica: Use a opção "Adicionar à tela de início" no seu navegador para transformar o hub em um aplicativo fixo no seu celular!
 📫 Contato
-Marcos Elias Antunes 📍 Dois Vizinhos, PR - Brasil. @marcos201316
-
+Marcos Elias Antunes 📍 Dois Vizinhos, PR - Brasil.
+Social: @marcos201316
 "Transformando lógica em diversão caótica."
 © 2026 Marcos Elias Antunes. Criado e mantido de forma independente.
