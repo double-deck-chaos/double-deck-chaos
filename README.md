@@ -1,52 +1,36 @@
-# Marcos Elias Antunes 👋
-## 🎮 Double Deck Independent Studio: O Hub de Jogos Web
-<img width="1024" height="1024" alt="1000011971" src="https://github.com/user-attachments/assets/3a5bea88-6a6d-4782-889a-bdc5f0906f2e" />
+Marcos Elias Antunes 👋
+🎮 Double Deck Independent Studio: O Hub de Jogos Web
+<img width="1024" height="1024" alt="DDS Hub" src="[https://github.com/user-attachments/assets/3a5bea88-6a6d-4782-889a-bdc5f0906f2e](https://github.com/user-attachments/assets/3a5bea88-6a6d-4782-889a-bdc5f0906f2e)" />
+Bem-vindo ao meu ecossistema de jogos! Sou Marcos Elias Antunes, desenvolvedor independente focado em criar experiências interativas leves, rápidas e desafiadoras utilizando o poder do ecossistema Web.
+Este repositório é o coração do Double Deck Independent Studio, apresentando um Menu Central (PWA) que consolida todos os meus títulos em um único lugar instalável.
+🔥 Coleção Chaos Series
+🐍 Chaos Snake: Underwater Sector (Novo: Ranking Global!)
+A evolução definitiva do clássico jogo da "cobrinha" com uma pegada subaquática.
+Ranking Global: Agora integrado ao Firebase, permitindo que você dispute o Top 10 com jogadores de qualquer lugar.
+Mecânica: Navegue por setores profundos, colete bolhas e utilize invencibilidade estratégica para sobreviver.
+Visual: Estética Neon imersiva com transições de ambiente.
+🃏 Double Deck Chaos
+Estratégia pura com cartas em uma interface otimizada.
+Destaque: Sistema de dois baralhos (88 cartas) e o brutal Modo Pesadelo.
+Diferencial: Gerenciamento de cartas Wild para ressurreição estratégica.
+🏃 Chaos Runner: Joker's Revenge
+Um "Endless Runner" frenético onde o baralho dita o ritmo.
+Ação: Pule ou atropele obstáculos, pegue todas as cartas de baralho que ver, elas te daram uma grande vantagem!
+Desafio: Carregue o maior "monte" possível sem colidir.
+💰 Chaos Monte Mania
+A versão neon vibrante do clássico Rouba Monte.
+Inteligência: Enfrente uma CPU com lógica de roubo aprimorada.
+🛠️ Stack Técnica & Inovações
+Backend as a Service: Integração com Firebase para persistência de dados e Rankings Globais.
+PWA (Progressive Web App): Menu instalável para experiência de app nativo no Android/iOS.
+Core: Desenvolvimento puramente com JavaScript Vanilla e Canvas API para máxima performance.
+Design: Interfaces autorais focadas em alto contraste e usabilidade mobile.
+🚀 Explore o Caos
+Acesse o portal via GitHub Pages.
+No Index, escolha o seu desafio.
+Dica: Use a opção "Adicionar à tela de início" no seu navegador para transformar o hub em um aplicativo fixo no seu celular!
+📫 Contato
+Marcos Elias Antunes 📍 Dois Vizinhos, PR - Brasil. @marcos201316
 
-Bem-vindo ao meu repositório central de jogos! Sou **Marcos Elias Antunes**, e aqui desenvolvo experiências interativas utilizando HTML5, CSS e JavaScript puro. 
-
-Este repositório contém um **Index (Menu Principal)** que permite acessar todos os meus títulos lançados a partir de um único lugar.
-
----
-
-## 🔥 O que você encontra aqui?
-
-### 🚀 Destaque: Chaos Ultimate Hunter
-Minha versão caótica e moderna do clássico jogo da "cobrinha".
-- **Ambiente:** Setores subaquáticos com transições visuais.
-- **Mecânica:** Colete bolhas, sobreviva a obstáculos e use a invencibilidade estratégica para avançar.
-
-### 🃏 Double Deck Chaos (Versão Sabonete)
-Um jogo de cartas estratégico onde a sorte encontra o planejamento.
-- **Destaque:** 2 baralhos, sistema de troca de Wilds e o desafiador **Modo Pesadelo**.
-
-### 🏃 Chaos Runner: Joker's Revenge
-Um "Endless Runner" frenético onde as cartas são seus obstáculos.
-- **Ação:** Pule, desvie e tente carregar o maior "monte" de cartas possível sem bater.
-
-### 💰 Chaos Monte Mania (Rouba Monte)
-A versão definitiva do clássico Rouba Monte com uma interface neon vibrante.
-- **Lógica:** Enfrente uma CPU inteligente e tente manter seu monte a salvo.
-
----
-
-## 🛠️ Tecnologias & Diferenciais
-- **Index Central:** Um menu instalável (**PWA**) para acesso rápido.
-- **Frontend:** Desenvolvido puramente com **JavaScript Vanilla** e **Canvas API**.
-- **Design:** Focado em estética Neon e interfaces otimizadas para mobile e desktop.
-- **Persistência:** Recordes e Hall da Fama salvos localmente.
-
----
-
-## 🚀 Como Jogar
-1. Acesse o link do projeto via **GitHub Pages**.
-2. No menu principal (Index), escolha o jogo que deseja iniciar.
-3. Se estiver no celular, você pode "Adicionar à tela de início" para jogar como um aplicativo real!
-
----
-
-## 📫 Sobre o Desenvolvedor
-**Marcos Elias Antunes**
-📍 Dois Vizinhos, PR - Brasil.
-> "Transformando lógica em diversão caótica."
-
-*© 2026 Marcos Elias Antunes. Criado e mantido por mim.*
+"Transformando lógica em diversão caótica."
+© 2026 Marcos Elias Antunes. Criado e mantido de forma independente.
